@@ -1,0 +1,13 @@
+{
+    "compilerOptions": {
+        "sourceMap": true,
+        "target": "ES2016",
+        "outDir": "./dist",
+        "strict": true,
+        "lib": ["ESNext"],
+        "esModuleInterop": true,
+        "skipLibCheck": true,
+        "module": "CommonJS", 
+        "forceConsistentCasingInFileNames": true,
+    }
+}

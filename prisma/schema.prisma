@@ -2,7 +2,8 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  previewFeatures = ["fullTextSearch", "fullTextIndex"]
 }
 
 datasource db {
@@ -11,14 +12,15 @@ datasource db {
 }
 
 model User {
-  id       Int      @id @default(autoincrement())
-  name     String
-  surname  String
-  email    String   @unique
-  password String
-  createAt DateTime @default(now())
-  role     Role     @relation(fields: [roleId], references: [id])
-  roleId   Int
+  id        Int      @id @default(autoincrement())
+  name      String
+  surname   String
+  email     String   @unique
+  password  String
+  createAt  DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  role      Role     @relation(fields: [roleId], references: [id])
+  roleId    Int
 }
 
 model Role {
@@ -28,9 +30,64 @@ model Role {
 }
 
 model GuessDate {
-  id    Int    @id @default(autoincrement())
-  title String
-  day   String
-  month String
-  year  String
+  id        Int      @id @default(autoincrement())
+  title     String
+  day       String
+  month     String
+  year      String
+  createAt  DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model HistoricalFigures {
+  id        Int      @id @default(autoincrement())
+  name      String
+  birth     String
+  death     String
+  image     String
+  text      String   @db.Text
+  createAt  DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@fulltext([name])
+}
+
+model Map {
+  id        Int         @id @default(autoincrement())
+  title     String
+  source    String      @db.LongText
+  era       String
+  imageURL  String      @db.LongText
+  createAt  DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+  Waypoints Waypoints[]
+}
+
+model Waypoints {
+  id                 Int              @id @default(autoincrement())
+  title              String
+  latitude           Float
+  longitude          Float
+  createAt           DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
+  map                Map              @relation(fields: [mapId], references: [id], onDelete: Cascade)
+  mapId              Int
+  EventId            HistoricalEvents @relation(fields: [historicalEventsId], references: [id])
+  historicalEventsId Int
+}
+
+model HistoricalEvents {
+  id        Int         @id @default(autoincrement())
+  title     String
+  content   String      @db.Text
+  image     String      @db.LongText
+  day       String
+  month     String
+  year      String
+  era       String
+  createAt  DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+  Waypoints Waypoints[]
+
+  @@fulltext([title])
 }

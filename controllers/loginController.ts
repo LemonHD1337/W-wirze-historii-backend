@@ -1,40 +1,13 @@
 import { Request, Response } from "express";
-import prisma from "../prisma/prismaClient";
 import bcrypt from "bcrypt";
+import CRUD from "../prisma/CRUD";
+
+const crud = new CRUD();
 
 interface UserData {
   password: string;
   id: number;
   role: string;
-}
-
-async function getLoginData(emial: string, res: Response): Promise<any> {
-  try {
-    const data = await prisma.user.findFirstOrThrow({
-      where: {
-        email: emial,
-      },
-      select: {
-        password: true,
-        id: true,
-        role: true,
-      },
-    });
-    return data;
-  } catch (err) {
-    res.status(309).json({ error: err });
-  }
-}
-
-function checkPassword(inputPassword: string, dbPassword: string) {
-  return new Promise((resolve, reject) => {
-    const isPasswordCorrect = bcrypt.compareSync(inputPassword, dbPassword);
-    if (isPasswordCorrect) {
-      resolve("zalogowany");
-    } else {
-      reject("złe hasło lub email");
-    }
-  });
 }
 
 async function login(req: Request, res: Response) {
@@ -73,6 +46,26 @@ async function login(req: Request, res: Response) {
   } catch (error) {
     res.status(409).json({ error: error });
   }
+}
+
+async function getLoginData(email: string, res: Response): Promise<any> {
+  try {
+    const data = await crud.login(email);
+    return data;
+  } catch (err) {
+    res.status(309).json({ error: err });
+  }
+}
+
+function checkPassword(inputPassword: string, dbPassword: string) {
+  return new Promise((resolve, reject) => {
+    const isPasswordCorrect = bcrypt.compareSync(inputPassword, dbPassword);
+    if (isPasswordCorrect) {
+      resolve("zalogowany");
+    } else {
+      reject("złe hasło lub email");
+    }
+  });
 }
 
 export default login;

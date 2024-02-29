@@ -7,7 +7,7 @@ const crud = new CRUD();
 
 const pathFolder = "C:/Users/patry/Desktop/backend-szkolny-projekt/uploads/";
 
-const createEvent = async (req: Request, res: Response) => {
+const createEvent = async (req: Request | any, res: Response) => {
   try {
     const filename = req.files["doc"][0].filename;
     const path = pathFolder + filename;

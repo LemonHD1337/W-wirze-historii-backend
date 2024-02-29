@@ -7,8 +7,8 @@ const crud = new CRUD();
 
 const pathFolder = "C:/Users/patry/Desktop/backend-szkolny-projekt/uploads/";
 
-const addContentHistoricalFigures = async (req: Request, res: Response) => {
-  const filename = req.files["doc"][0].filename;
+const addContentHistoricalFigures = async (req: Request | any, res: Response) => {
+  const filename: any = req.files["doc"][0].filename;
   const path = pathFolder + filename;
 
   const imgName = req.files["pic"][0].filename;

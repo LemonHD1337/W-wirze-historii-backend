@@ -1,4 +1,4 @@
-import { PrismaClient, Waypoints } from "@prisma/client";
+import { PrismaClient } from "@prisma/client";
 
 interface RegisterUser {
   name: string;
@@ -50,14 +50,6 @@ interface Waypoint {
   title: string;
   mapId: number;
   historicalEventsId: number;
-}
-
-interface Content {
-  content: string;
-  image: string;
-  title: string;
-  date: string;
-  waypointId: number;
 }
 
 interface UpdateUserInfo {
@@ -219,6 +211,26 @@ export default class CRUD {
     }
   }
 
+  async searchEvents(text: string) {
+    try {
+      return await this.prisma.historicalEvents.findMany({
+        select: {
+          id: true,
+          title: true,
+          image: true,
+          era: true,
+        },
+        where: {
+          title: {
+            search: `${text}*`,
+          },
+        },
+      });
+    } catch (err) {
+      throw err;
+    }
+  }
+
   async searchHistoricalFigures(text: string) {
     try {
       return await this.prisma.historicalFigures.findMany({
@@ -226,17 +238,18 @@ export default class CRUD {
           id: true,
           birth: true,
           death: true,
-          content: true,
-          imgName: true,
+          text: true,
+          image: true,
           name: true,
         },
         where: {
           name: {
-            search: text,
+            search: `${text}*`,
           },
         },
       });
     } catch (err) {
+      console.log(err);
       throw err;
     }
   }
@@ -500,6 +513,8 @@ export default class CRUD {
           month: true,
           year: true,
           content: true,
+          title: true,
+          createAt: true,
         },
         where: {
           id: id,

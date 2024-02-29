@@ -6,9 +6,7 @@ const crud = new CRUD();
 async function getRecordForGuessDate(req: Request, res: Response) {
   try {
     const rows = await crud.guessDateCount();
-    console.log(rows);
     const randomId = Math.floor(Math.random() * rows) + 1;
-    console.log(randomId);
     const data = await crud.getDateGuessDate(randomId);
 
     res.status(200).json(data);

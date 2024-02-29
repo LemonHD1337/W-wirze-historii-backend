@@ -44,6 +44,7 @@ import {
   getEventsByEra,
   getEvents,
   getEventById,
+  searchEvents,
 } from "./controllers/eventsController";
 
 import {
@@ -136,6 +137,7 @@ app.delete("/all/event/delete/:id", deleteEvent);
 app.get("/all/events", getEvents);
 app.post("/all/events", getEventsByEra);
 app.get("/all/event/:id", getEventById);
+app.post("/all/events/search", searchEvents);
 
 //waypoints api
 app.post("/map/addWaypoint", addWaypoint);

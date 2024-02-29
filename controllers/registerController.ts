@@ -19,7 +19,7 @@ async function register(req: Request, res: Response) {
     const result = await crud.registerUser(user);
     res.send({ msg: "użytkownik stworzony" });
   } catch (error) {
-    res.status(309).json({ msg: error });
+    res.status(309).json(error);
   }
 }
 

@@ -72,7 +72,7 @@ model Waypoints {
   updatedAt          DateTime         @updatedAt
   map                Map              @relation(fields: [mapId], references: [id], onDelete: Cascade)
   mapId              Int
-  EventId            HistoricalEvents @relation(fields: [historicalEventsId], references: [id])
+  EventId            HistoricalEvents @relation(fields: [historicalEventsId], references: [id], onDelete: Cascade)
   historicalEventsId Int
 }
 

@@ -1,13 +1,16 @@
 import { Request, Response } from "express";
 import CRUD from "../prisma/CRUD";
 import mammoth from "@igormadeira/mammoth";
+import fs from "node:fs";
 
 const crud = new CRUD();
+
+const pathFolder = "C:/Users/patry/Desktop/backend-szkolny-projekt/uploads/";
 
 const createEvent = async (req: Request, res: Response) => {
   try {
     const filename = req.files["doc"][0].filename;
-    const path = "C:/Users/patry/Desktop/backend-szkolny-projekt/uploads/" + filename;
+    const path = pathFolder + filename;
     const image = req.files["pic"][0].filename;
     const result = await mammoth.convertToHtml({ path: path });
     const content = result.value;
@@ -23,6 +26,13 @@ const createEvent = async (req: Request, res: Response) => {
     };
     await crud.createEvent(data);
     res.send();
+
+    fs.unlink(path, (err) => {
+      if (err) {
+        console.log("nie usunięto pliku word " + filename, err);
+      }
+      console.log("usunięto plik word" + filename);
+    });
   } catch (err) {
     res.status(309).send({ msg: err });
   }
@@ -31,9 +41,17 @@ const createEvent = async (req: Request, res: Response) => {
 const deleteEvent = async (req: Request, res: Response) => {
   try {
     const id: number = Number(req.params.id);
-    await crud.deleteEvent(id);
+    const result = await crud.deleteEvent(id);
     res.send();
+
+    fs.unlink(pathFolder + result.image, (err) => {
+      if (err) {
+        console.log("nie usunięto zdjecia " + result.image);
+      }
+      console.log("usunięto zdjecia " + result.image);
+    });
   } catch (error) {
+    console.log(error);
     res.status(309).send({ msg: error });
   }
 };
@@ -66,4 +84,20 @@ const getEventById = async (req: Request, res: Response) => {
   }
 };
 
-export { createEvent, deleteEvent, getEventsByEra, getEvents, getEventById };
+const searchEvents = async (req: Request, res: Response) => {
+  try {
+    const data = await crud.searchEvents(req.body.search);
+    res.send(data);
+  } catch (error) {
+    res.status(309).send({ msg: error });
+  }
+};
+
+export {
+  createEvent,
+  deleteEvent,
+  getEventsByEra,
+  getEvents,
+  getEventById,
+  searchEvents,
+};

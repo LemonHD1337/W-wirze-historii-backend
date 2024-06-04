@@ -32,8 +32,8 @@ model Role {
 model GuessDate {
   id        Int      @id @default(autoincrement())
   title     String
-  day       String
-  month     String
+  day       String?
+  month     String?
   year      String
   createAt  DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -42,10 +42,10 @@ model GuessDate {
 model HistoricalFigures {
   id        Int      @id @default(autoincrement())
   name      String
-  birth     String
-  death     String
-  image     String
-  text      String   @db.Text
+  birth     String?
+  death     String?
+  image     String   @db.LongText
+  document  String   @db.LongText
   createAt  DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -79,12 +79,12 @@ model Waypoints {
 model HistoricalEvents {
   id        Int         @id @default(autoincrement())
   title     String
-  content   String      @db.Text
+  document  String      @db.LongText
   image     String      @db.LongText
-  day       String
-  month     String
-  year      String
-  era       String
+  day       String?
+  month     String?
+  year      String?
+  era       String?
   createAt  DateTime    @default(now())
   updatedAt DateTime    @updatedAt
   Waypoints Waypoints[]

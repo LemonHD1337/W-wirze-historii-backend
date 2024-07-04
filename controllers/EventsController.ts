@@ -1,37 +1,27 @@
 import { Request, Response } from "express";
 import Events from "../models/Events";
-import mammoth from "@igormadeira/mammoth";
-import fs from "node:fs";
 
 export default class EventsController {
   async create(req: Request, res: Response) {
     try {
-      const filename: string = req.files["doc"][0].filename;
-      const path = process.env.PATHFOLDER + filename;
+      console.log(req.files);
+      //@ts-expect-error
+      const filename = req.files["doc"][0].filename;
+      //@ts-expect-error
       const image = req.files["pic"][0].filename;
-      const result = await mammoth.convertToHtml({ path: path });
-      const content = result.value;
 
       const data = {
         title: req.body.title,
-        content: content,
-        day: req.body.day,
-        month: req.body.month,
-        year: req.body.year,
+        document: filename,
         era: req.body.era,
         image: image,
       };
 
       await Events.create(data);
-      res.send();
-
-      fs.unlink(path, err => {
-        if (err) {
-          console.log("nie usunięto pliku word " + filename, err);
-        }
-      });
+      res.sendStatus(200);
     } catch (err) {
-      res.status(309).send({ msg: err });
+      console.log(err);
+      res.status(500).send({ msg: err });
     }
   }
 
@@ -39,28 +29,24 @@ export default class EventsController {
     try {
       const id: number = Number(req.params.id);
       const result = await Events.delete(id);
-      res.send();
-
-      fs.unlink(process.env.PATHFOLDER + result.image, err => {
-        if (err) {
-          console.log("nie usunięto zdjecia " + result.image);
-        }
-      });
-    } catch (error) {
-      res.status(309).send({ msg: error });
+      res.sendStatus(200);
+    } catch (err) {
+      console.log(err);
+      res.status(500).send({ msg: err });
     }
   }
 
   async getEventByEra(req: Request, res: Response) {
     try {
-      const data = await Events.getAllByEra(req.body.era);
+      const data = await Events.getAllByEra(req.params.era);
       res.send(data);
-    } catch (error) {
-      res.status(309).send({ msg: error });
+    } catch (err) {
+      console.log(err);
+      res.status(500).send({ msg: err });
     }
   }
 
-  async getAll(req: Request, res: Response) {
+  async paginated(req: Request, res: Response) {
     try {
       const query = req.query;
       const page = Number(query.page);
@@ -84,9 +70,9 @@ export default class EventsController {
       const id = Number(req.params.id);
       const data = await Events.get(id);
       res.send(data);
-    } catch (error) {
-      console.log(error);
-      res.status(309).send({ msg: error });
+    } catch (err) {
+      console.log(err);
+      res.status(500).send({ msg: err });
     }
   }
 
@@ -104,9 +90,9 @@ export default class EventsController {
       result.currentPage = page;
       result.paginateData = await Events.search(searchedValue, skip, limit);
       res.status(200).json(result);
-    } catch (error) {
-      console.log(error);
-      res.status(309).send({ msg: error });
+    } catch (err) {
+      console.log(err);
+      res.status(500).send({ msg: err });
     }
   }
 }

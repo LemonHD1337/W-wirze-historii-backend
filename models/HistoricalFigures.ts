@@ -2,10 +2,8 @@ import { PrismaClient } from "@prisma/client";
 
 interface Create {
   name: string;
-  birth: string;
-  death: string;
   image: string;
-  text: string;
+  document: string;
 }
 
 export default class HistoricalFigures {
@@ -31,9 +29,7 @@ export default class HistoricalFigures {
           id: id,
         },
         select: {
-          birth: true,
-          death: true,
-          text: true,
+          document: true,
           image: true,
           name: true,
         },
@@ -44,7 +40,21 @@ export default class HistoricalFigures {
     }
   }
 
-  static async getAll(skip: number, take: number) {
+  static async getAll() {
+    try {
+      return await this.prisma.historicalFigures.findMany({
+        select: {
+          id: true,
+          name: true,
+        },
+      });
+    } catch (e) {
+      console.log("error", e);
+      throw e;
+    }
+  }
+
+  static async paginated(skip: number, take: number) {
     try {
       return await this.prisma.historicalFigures.findMany({
         select: {
@@ -81,9 +91,7 @@ export default class HistoricalFigures {
         take: take,
         select: {
           id: true,
-          birth: true,
-          death: true,
-          text: true,
+          document: true,
           image: true,
           name: true,
         },

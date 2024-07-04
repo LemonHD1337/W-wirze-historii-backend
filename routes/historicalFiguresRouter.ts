@@ -12,8 +12,9 @@ const multerSave = upload.fields([
 ]);
 
 historicalFiguresRouter.post("/create", multerSave, controller.create);
+historicalFiguresRouter.get("/get/all", controller.getAll);
 historicalFiguresRouter.get("/get/:id", controller.get);
-historicalFiguresRouter.get("/page", controller.getAll);
+historicalFiguresRouter.get("/page", controller.paginated);
 historicalFiguresRouter.get("/search", controller.search);
 historicalFiguresRouter.delete("/delete/:id", controller.delete);
 

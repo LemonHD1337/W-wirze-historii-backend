@@ -41,7 +41,3 @@ app.use("/guessDate", guessDateRouter);
 app.use("/waypoints", waypointsRouter);
 app.use("/users", usersRouter);
 app.use("/maps", mapsRouter);
-
-//TODO: JSWT
-//TODO: RESPONSE CODE WITH MESSAGE
-//TODO: LOGGER

@@ -2,11 +2,8 @@ import { PrismaClient } from "@prisma/client";
 
 interface Create {
   title: string;
-  day: string;
-  month: string;
-  year: string;
   era: string;
-  content: string;
+  document: string;
   image: string;
 }
 
@@ -75,10 +72,7 @@ export default class Events {
       return await this.prisma.historicalEvents.findFirstOrThrow({
         select: {
           image: true,
-          day: true,
-          month: true,
-          year: true,
-          content: true,
+          document: true,
           title: true,
           createAt: true,
         },

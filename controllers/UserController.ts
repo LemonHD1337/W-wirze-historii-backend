@@ -4,6 +4,7 @@ import Users from "../models/Users";
 import validateRegister from "../helpers/validateRegister";
 import getLoginData from "../helpers/getLoginData";
 import checkPassword from "../helpers/checkPassword";
+import sendMail from "../helpers/sendMail";
 
 interface IDataUser {
   name: string;
@@ -32,7 +33,7 @@ export default class UsersController {
       res.send();
     } catch (error) {
       console.log(error);
-      res.status(309).send({ msg: error });
+      res.status(500).send({ msg: error });
     }
   }
 
@@ -44,7 +45,7 @@ export default class UsersController {
       res.send();
     } catch (error) {
       console.log(error);
-      res.status(309).send({ msg: error });
+      res.status(500).send({ msg: error });
     }
   }
 
@@ -55,7 +56,7 @@ export default class UsersController {
       res.send();
     } catch (error) {
       console.log(error);
-      res.status(309).send({ msg: error });
+      res.status(500).send({ msg: error });
     }
   }
 
@@ -63,7 +64,7 @@ export default class UsersController {
     try {
       const data: any = await validateRegister(req.body);
       const hashPass: any = await hashPassword(data.password);
-      
+
       const user: IDataUser = {
         name: data.name,
         surname: data.surname,
@@ -75,7 +76,7 @@ export default class UsersController {
       res.send({ msg: "użytkownik stworzony" });
     } catch (error) {
       console.log(error);
-      res.status(309).json(error);
+      res.status(500).json(error);
     }
   }
 
@@ -83,6 +84,7 @@ export default class UsersController {
     try {
       const userData = await getLoginData(req.body.email);
       await checkPassword(req.body.password, userData.password);
+
       if (req.body.remember) {
         //cookie data
         const cookieData = {
@@ -98,6 +100,12 @@ export default class UsersController {
           sameSite: "lax",
         });
 
+        res.status(200).json({
+          auth: true,
+          userId: userData.id,
+          role: userData.role,
+        });
+
         res.send();
       } else {
         res.status(200).json({
@@ -108,7 +116,34 @@ export default class UsersController {
       }
     } catch (error) {
       console.log(error);
-      res.status(409).json(error);
+      res.status(500).json(error);
+    }
+  }
+
+  async checkEmail(req: Request, res: Response) {
+    try {
+      const data = await Users.checkEmail(String(req.body.email));
+      console.log(data);
+      await sendMail(String(req.body.email), Number(data.id));
+      res.status(200).send(data);
+    } catch (e) {
+      res.sendStatus(500).json(e);
+    }
+  }
+
+  async checkCode(req: Request, res: Response) {
+    try {
+      const data = await Users.checkCode(req.body.id);
+      if (req.body.code === data.code) {
+        await Users.deleteCode(data.id);
+        res.sendStatus(200);
+      } else {
+        await Users.deleteCode(data.id);
+        res.status(403).json({ message: "Błąd, należy jeszcze raz" });
+      }
+    } catch (e) {
+      console.log(e);
+      res.status(500).json(e);
     }
   }
 }

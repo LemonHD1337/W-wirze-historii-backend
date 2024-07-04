@@ -13,9 +13,9 @@ const multerSave = upload.fields([
 
 eventsRouter.post("/create", multerSave, controller.create);
 eventsRouter.delete("/delete/:id", controller.delete);
+eventsRouter.get("/get/all/:era", controller.getEventByEra);
 eventsRouter.get("/get/:id", controller.get);
 eventsRouter.get("/search", controller.search);
-eventsRouter.get("/page", controller.getAll);
-eventsRouter.get("/get/all/:era", controller.getEventByEra);
+eventsRouter.get("/page", controller.paginated);
 
 export default eventsRouter;

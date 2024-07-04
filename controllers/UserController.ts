@@ -5,6 +5,7 @@ import validateRegister from "../helpers/validateRegister";
 import getLoginData from "../helpers/getLoginData";
 import checkPassword from "../helpers/checkPassword";
 import sendMail from "../helpers/sendMail";
+import jsonwebtoken from "jsonwebtoken";
 
 interface IDataUser {
   name: string;
@@ -85,7 +86,61 @@ export default class UsersController {
       const userData = await getLoginData(req.body.email);
       await checkPassword(req.body.password, userData.password);
 
+      if (!process.env.ACCESS_TOKEN_SECRET || !process.env.REFRESH_TOKEN_SECRET)
+        return;
+
       if (req.body.remember) {
+        if (
+          userData.role.role === "admin" ||
+          userData.role.role === "creator"
+        ) {
+          if (!req.cookies.refreshToken) {
+            const refreshToken = jsonwebtoken.sign(
+              { id: userData.id },
+              process.env.REFRESH_TOKEN_SECRET,
+              { expiresIn: "30d" },
+            );
+
+            const refreshTokenHttpOnlyCookie = {
+              refreshToken: refreshToken,
+            };
+
+            res.cookie("refreshToken", refreshTokenHttpOnlyCookie, {
+              httpOnly: true,
+              secure: false,
+              sameSite: "lax",
+            });
+          }
+
+          const accessToken = jsonwebtoken.sign(
+            { id: userData.id },
+            process.env.ACCESS_TOKEN_SECRET,
+            {
+              expiresIn: "15m",
+            },
+          );
+
+          const cookieData = {
+            auth: true,
+            userId: userData.id,
+            role: userData.role,
+          };
+
+          //
+          res.cookie("loggedIn", cookieData, {
+            expires: new Date(Date.now() + 1000 * 60 * 60 * 24 * 30),
+            secure: false,
+            sameSite: "lax",
+          });
+
+          return res.status(200).json({
+            auth: true,
+            userId: userData.id,
+            role: userData.role,
+            accessToken: accessToken,
+          });
+        }
+
         //cookie data
         const cookieData = {
           auth: true,
@@ -93,26 +148,62 @@ export default class UsersController {
           role: userData.role,
         };
 
-        //send cookie
+        //
         res.cookie("loggedIn", cookieData, {
-          expires: new Date(Date.now() + 3600 * 2 * 30 * 1000),
+          expires: new Date(Date.now() + 1000 * 60 * 60 * 24 * 30),
           secure: false,
           sameSite: "lax",
         });
 
-        res.status(200).json({
+        return res.status(200).json({
           auth: true,
           userId: userData.id,
           role: userData.role,
         });
-
-        res.send();
       } else {
-        res.status(200).json({
-          auth: true,
-          userId: userData.id,
-          role: userData.role,
-        });
+        if (
+          userData.role.role === "admin" ||
+          userData.role.role === "creator"
+        ) {
+          if (!req.cookies.refreshToken) {
+            const refreshToken = jsonwebtoken.sign(
+              { id: userData.id },
+              process.env.REFRESH_TOKEN_SECRET,
+              { expiresIn: "30d" },
+            );
+
+            const refreshTokenHttpOnlyCookie = {
+              refreshToken: refreshToken,
+            };
+
+            res.cookie("refreshToken", refreshTokenHttpOnlyCookie, {
+              httpOnly: true,
+              secure: false,
+              sameSite: "lax",
+            });
+          }
+
+          const accessToken = jsonwebtoken.sign(
+            { id: userData.id },
+            process.env.ACCESS_TOKEN_SECRET,
+            {
+              expiresIn: "15m",
+            },
+          );
+
+          return res.status(200).json({
+            auth: true,
+            userId: userData.id,
+            role: userData.role,
+            accessToken: accessToken,
+          });
+        } else {
+          res.status(200).json({
+            auth: true,
+            userId: userData.id,
+            role: userData.role,
+          });
+        }
       }
     } catch (error) {
       console.log(error);
@@ -145,5 +236,37 @@ export default class UsersController {
       console.log(e);
       res.status(500).json(e);
     }
+  }
+
+  refreshToken(req: Request, res: Response) {
+    if (!req.cookies.refreshToken) return res.sendStatus(500);
+
+    const token: string = req.cookies.refreshToken.refreshToken;
+
+    if (!process.env.REFRESH_TOKEN_SECRET) return;
+
+    jsonwebtoken.verify(
+      token,
+      process.env.REFRESH_TOKEN_SECRET,
+      (err, decoded) => {
+        if (err) return res.sendStatus(401);
+
+        if (!process.env.ACCESS_TOKEN_SECRET) return;
+
+        //@ts-expect-error
+        const id = decoded.id;
+
+        //@ts-nocheck
+        const accessToken = jsonwebtoken.sign(
+          { id: id },
+          process.env.ACCESS_TOKEN_SECRET,
+          {
+            expiresIn: "15m",
+          },
+        );
+
+        return res.status(200).send({ accessToken: accessToken });
+      },
+    );
   }
 }

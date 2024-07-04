@@ -1,12 +1,13 @@
-import {Router} from "express";
+import { Router } from "express";
 import WaypointsController from "../controllers/WaypointsController";
+import authenticateToken from "../middleware/authenticateToken";
 
-const controller = new WaypointsController()
+const controller = new WaypointsController();
 
-const waypointsRouter = Router()
+const waypointsRouter = Router();
 
-waypointsRouter.post("/create", controller.create)
-waypointsRouter.get("/get/all/:mapId", controller.getAllByMap)
-waypointsRouter.delete("/delete/:id", controller.delete)
+waypointsRouter.post("/create", authenticateToken, controller.create);
+waypointsRouter.get("/get/all/:mapId", controller.getAllByMap);
+waypointsRouter.delete("/delete/:id", authenticateToken, controller.delete);
 
-export default waypointsRouter
+export default waypointsRouter;

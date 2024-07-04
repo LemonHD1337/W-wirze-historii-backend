@@ -1,6 +1,7 @@
 import express from "express";
 import upload from "../services/multer";
 import EventsController from "../controllers/EventsController";
+import authenticateToken from "../middleware/authenticateToken";
 
 const controller = new EventsController();
 
@@ -11,8 +12,8 @@ const multerSave = upload.fields([
   { name: "doc", maxCount: 1 },
 ]);
 
-eventsRouter.post("/create", multerSave, controller.create);
-eventsRouter.delete("/delete/:id", controller.delete);
+eventsRouter.post("/create", authenticateToken, multerSave, controller.create);
+eventsRouter.delete("/delete/:id", authenticateToken, controller.delete);
 eventsRouter.get("/get/all/:era", controller.getEventByEra);
 eventsRouter.get("/get/:id", controller.get);
 eventsRouter.get("/search", controller.search);

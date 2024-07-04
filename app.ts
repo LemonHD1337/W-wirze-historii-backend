@@ -11,11 +11,10 @@ import waypointsRouter from "./routes/waypointsRouter";
 import mapsRouter from "./routes/mapsRouter";
 import usersRouter from "./routes/usersRouter";
 
-//init server
-const PORT: number = Number(process.env["PORT"]);
 const app: Express = express();
-app.listen(PORT, () => {
-  console.log(`Serwer działa na http://localhost:${PORT}`);
+
+app.listen(process.env["PORT"], () => {
+  console.log(`Serwer działa na http://localhost:${process.env["PORT"]}`);
 });
 
 //middlewares

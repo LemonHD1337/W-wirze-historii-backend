@@ -13,5 +13,6 @@ usersRouter.post("/register", controller.register);
 usersRouter.post("/login", controller.login);
 usersRouter.post("/check/e-mail", controller.checkEmail);
 usersRouter.post("/check/code", controller.checkCode);
+usersRouter.get("/refresh/token", controller.refreshToken);
 
 export default usersRouter;

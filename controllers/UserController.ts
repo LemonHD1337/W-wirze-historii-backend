@@ -6,6 +6,20 @@ import getLoginData from "../helpers/getLoginData";
 import checkPassword from "../helpers/checkPassword";
 import sendMail from "../helpers/sendMail";
 import jsonwebtoken from "jsonwebtoken";
+import {
+  generateAccessToken,
+  generateRefreshToken,
+} from "../helpers/tokensJWT";
+
+interface LoginDataToReturn {
+  auth: boolean;
+  userId: number;
+  role: {
+    id: number;
+    role: string;
+  };
+  accessToken?: string;
+}
 
 interface IDataUser {
   name: string;
@@ -86,125 +100,56 @@ export default class UsersController {
       const userData = await getLoginData(req.body.email);
       await checkPassword(req.body.password, userData.password);
 
-      if (!process.env.ACCESS_TOKEN_SECRET || !process.env.REFRESH_TOKEN_SECRET)
-        return;
+      const userRole = userData.role.role;
 
-      if (req.body.remember) {
-        if (
-          userData.role.role === "admin" ||
-          userData.role.role === "creator"
-        ) {
-          if (!req.cookies.refreshToken) {
-            const refreshToken = jsonwebtoken.sign(
-              { id: userData.id },
-              process.env.REFRESH_TOKEN_SECRET,
-              { expiresIn: "30d" },
-            );
+      const dataToReturn: LoginDataToReturn = {
+        auth: true,
+        userId: userData.id,
+        role: userData.role,
+      };
 
-            const refreshTokenHttpOnlyCookie = {
-              refreshToken: refreshToken,
-            };
-
-            res.cookie("refreshToken", refreshTokenHttpOnlyCookie, {
-              httpOnly: true,
-              secure: false,
-              sameSite: "lax",
-            });
-          }
-
-          const accessToken = jsonwebtoken.sign(
-            { id: userData.id },
-            process.env.ACCESS_TOKEN_SECRET,
-            {
-              expiresIn: "15m",
-            },
-          );
-
-          const cookieData = {
-            auth: true,
-            userId: userData.id,
-            role: userData.role,
-          };
-
-          //
-          res.cookie("loggedIn", cookieData, {
+      if (userRole === "user") {
+        if (req.body.remember) {
+          res.cookie("loggedIn", dataToReturn, {
             expires: new Date(Date.now() + 1000 * 60 * 60 * 24 * 30),
             secure: false,
             sameSite: "lax",
           });
-
-          return res.status(200).json({
-            auth: true,
-            userId: userData.id,
-            role: userData.role,
-            accessToken: accessToken,
-          });
         }
+        return res.status(200).json(dataToReturn);
+      }
 
-        //cookie data
-        const cookieData = {
-          auth: true,
-          userId: userData.id,
-          role: userData.role,
+      if (!req.cookies.refreshToken) {
+        const refreshToken = generateRefreshToken(
+          { id: userData.id },
+          { expiresIn: "30d" },
+        );
+
+        const data = {
+          refreshToken: refreshToken,
         };
 
-        //
-        res.cookie("loggedIn", cookieData, {
+        res.cookie("refreshToken", data, {
+          httpOnly: true,
+          secure: false,
+          sameSite: "lax",
+        });
+      }
+
+      if (req.body.remember) {
+        res.cookie("loggedIn", dataToReturn, {
           expires: new Date(Date.now() + 1000 * 60 * 60 * 24 * 30),
           secure: false,
           sameSite: "lax",
         });
-
-        return res.status(200).json({
-          auth: true,
-          userId: userData.id,
-          role: userData.role,
-        });
-      } else {
-        if (
-          userData.role.role === "admin" ||
-          userData.role.role === "creator"
-        ) {
-          if (!req.cookies.refreshToken) {
-            const refreshToken = jsonwebtoken.sign(
-              { id: userData.id },
-              process.env.REFRESH_TOKEN_SECRET,
-              { expiresIn: "30d" },
-            );
-
-            const refreshTokenHttpOnlyCookie = {
-              refreshToken: refreshToken,
-            };
-
-            res.cookie("refreshToken", refreshTokenHttpOnlyCookie, {
-              httpOnly: true,
-              secure: false,
-              sameSite: "lax",
-            });
-          }
-
-          const accessToken = jsonwebtoken.sign(
-            { id: userData.id },
-            process.env.ACCESS_TOKEN_SECRET,
-            {
-              expiresIn: "15m",
-            },
-          );
-
-          return res.status(200).json({
-            auth: true,
-            userId: userData.id,
-            role: userData.role,
-            accessToken: accessToken,
-          });
-        } else {
-          res.status(200).json({
-            auth: true,
-            userId: userData.id,
-            role: userData.role,
-          });
-        }
       }
+
+      dataToReturn.accessToken = generateAccessToken(
+        { id: userData.id },
+        { expiresIn: "15m" },
+      );
+
+      return res.status(200).json(dataToReturn);
     } catch (error) {
       console.log(error);
       res.status(500).json(error);

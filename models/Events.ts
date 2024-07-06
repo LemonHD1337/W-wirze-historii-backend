@@ -34,7 +34,7 @@ export default class Events {
     }
   }
 
-  static async getAllByEra(era: string) {
+  static async getAllByEra(era: string, selectUnused: boolean | undefined) {
     try {
       return await this.prisma.historicalEvents.findMany({
         select: {
@@ -43,9 +43,11 @@ export default class Events {
         },
         where: {
           era: era,
+          used: selectUnused,
         },
       });
     } catch (error) {
+      console.log(error);
       throw error;
     }
   }

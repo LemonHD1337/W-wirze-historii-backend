@@ -4,7 +4,6 @@ import Events from "../models/Events";
 export default class EventsController {
   async create(req: Request, res: Response) {
     try {
-      console.log(req.files);
       //@ts-expect-error
       const filename = req.files["doc"][0].filename;
       //@ts-expect-error
@@ -38,7 +37,18 @@ export default class EventsController {
 
   async getEventByEra(req: Request, res: Response) {
     try {
-      const data = await Events.getAllByEra(req.params.era);
+      const selectUnused = req.query.selectUnused;
+
+      const stringToBool = (a: any) => {
+        if (typeof a === "undefined") return;
+        if (a === "true") return false;
+        return true;
+      };
+
+      const data = await Events.getAllByEra(
+        req.params.era,
+        stringToBool(selectUnused),
+      );
       res.send(data);
     } catch (err) {
       console.log(err);

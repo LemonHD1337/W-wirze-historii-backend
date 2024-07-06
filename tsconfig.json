@@ -6,8 +6,9 @@
         "strict": true,
         "lib": ["ESNext"],
         "esModuleInterop": true,
-        "skipLibCheck": true,
+        "skipLibCheck": false,
         "module": "CommonJS", 
         "forceConsistentCasingInFileNames": true,
+
     }
 }

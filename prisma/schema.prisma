@@ -84,6 +84,7 @@ model HistoricalEvents {
   createAt  DateTime    @default(now())
   updatedAt DateTime    @updatedAt
   Waypoints Waypoints[]
+  used      Boolean     @default(false)
 
   @@fulltext([title])
 }
